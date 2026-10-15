@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------------------
+# ANATO3D backend dependencies
+# Python >= 3.10
+# ---------------------------------------------------------------------------
+
+# Web layer
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+pydantic>=2.5
+pydantic-settings>=2.1
+
+# Scientific core
+numpy>=1.26
+scipy>=1.11
+
+# DICOM
+pydicom>=2.4
+
+# Image processing / segmentation / marching cubes
+scikit-image>=0.22
+
+# Mesh processing + export (GLB/GLTF, STL, OBJ)
+trimesh>=4.0
+numpy-stl>=3.0
+
+# Optional: NIfTI I/O for export + ground-truth masks
+nibabel>=5.2
+
+# Optional: fast quadric mesh decimation (pure-python fallback exists)
+fast-simplification>=0.1.7
+
+# Testing
+pytest>=8.0
+pytest-asyncio>=0.23
+httpx>=0.27
+
+# ---------------------------------------------------------------------------
+# OPTIONAL / LARGE - not required for the classical pipeline.
+# Uncomment to enable the (stubbed) AI segmentation adapter.
+# ---------------------------------------------------------------------------
+# monai>=1.3
+# torch>=2.2
+# nnunetv2>=2.5

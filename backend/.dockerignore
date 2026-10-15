@@ -1,0 +1,14 @@
+# Keep the backend image small and avoid baking in local state.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+_work/
+data/
+*.sqlite3
+.env
+.env.*
+tests/

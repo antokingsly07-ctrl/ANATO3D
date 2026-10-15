@@ -1,0 +1,37 @@
+# ANATO3D — local research deployment.
+#
+#   docker compose up --build
+#   backend  -> http://127.0.0.1:8000   (API + docs at /docs)
+#   frontend -> http://127.0.0.1:5173   (nginx, proxies /api to backend)
+#
+# There is NO authentication here. Run on localhost / a trusted network only.
+
+services:
+  backend:
+    build:
+      context: ./backend
+    image: anato3d-backend:latest
+    environment:
+      ANATO3D_DATA_DIR: /data
+      ANATO3D_DEBUG: "false"
+      # Browser origins allowed to call the API directly (CORS).
+      ANATO3D_CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173"]'
+    ports:
+      - "8000:8000"
+    volumes:
+      # All uploads and derived artefacts. Disposable: `docker compose down -v`.
+      - anato3d-work:/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    image: anato3d-frontend:latest
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+
+volumes:
+  anato3d-work:

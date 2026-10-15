@@ -1,0 +1,37 @@
+# Normalise line endings so the repository is identical on Windows, Linux and
+# inside Docker. Text is stored as LF; Windows-only scripts stay CRLF.
+* text=auto eol=lf
+
+# Windows-specific scripts / manifests keep CRLF so they run natively.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Shell scripts must stay LF or they break inside Linux containers.
+*.sh text eol=lf
+
+# Explicit binary types (never line-ending translated).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.nii binary
+*.npz binary
+*.npy binary
+*.glb binary
+*.gltf binary
+*.stl binary
+*.obj binary
+*.dcm binary
+*.pt binary
+*.pth binary
+*.onnx binary
+*.woff binary
+*.woff2 binary
+
+# Lockfiles are generated; keep diffs smaller and merge-friendly.
+package-lock.json -diff linguist-generated

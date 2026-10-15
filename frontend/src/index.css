@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-ink-950 text-slate-200 antialiased;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Thin, unobtrusive scrollbars for the dense clinical layout. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #273244 transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: #273244;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #3a485f;
+  background-clip: content-box;
+}
+
+/* The mammography-style viewport background. */
+.viewport-grid {
+  background-image:
+    linear-gradient(rgba(56, 209, 196, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 209, 196, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+@layer components {
+  .panel {
+    @apply flex flex-col rounded-lg border border-ink-700/70 bg-ink-900/80 shadow-lg shadow-black/20;
+  }
+  .panel-title {
+    @apply flex items-center justify-between gap-2 border-b border-ink-700/70 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-primary {
+    @apply btn border-accent/40 bg-accent/15 text-accent-soft hover:bg-accent/25;
+  }
+  .btn-ghost {
+    @apply btn border-ink-600/70 bg-ink-800/60 text-slate-300 hover:bg-ink-700/70;
+  }
+  .btn-danger {
+    @apply btn border-severity-error/40 bg-severity-error/10 text-severity-error hover:bg-severity-error/20;
+  }
+  .field-label {
+    @apply text-[10px] font-medium uppercase tracking-[0.12em] text-slate-500;
+  }
+  .field-input {
+    @apply w-full rounded-md border border-ink-600/70 bg-ink-850/80 px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-accent/60;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide;
+  }
+}
