@@ -1,0 +1,38 @@
+# ANATO3D — Render Blueprint for the FastAPI backend.
+#
+# The frontend is hosted separately (e.g. Vercel). This Blueprint deploys only
+# the backend Docker image, rooted at ./backend.
+#
+# After the first deploy, set the backend's ANATO3D_CORS_ORIGINS value to your
+# frontend origin, and point the frontend at this service via VITE_API_BASE.
+
+services:
+  - type: web
+    name: anato3d-backend
+    runtime: docker
+    plan: free
+    region: oregon
+    # Monorepo layout: build only the backend image.
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - backend/**
+    envVars:
+      - key: ANATO3D_DEBUG
+        value: "false"
+      # All uploads and derived artefacts (ephemeral unless a disk is attached).
+      - key: ANATO3D_DATA_DIR
+        value: /data
+      # Browser origins allowed to call the API. Set this in the Render Dashboard
+      # to your frontend URL, e.g. '["https://your-app.vercel.app"]'.
+      - key: ANATO3D_CORS_ORIGINS
+        sync: false
+    # Persistent disk keeps uploads across deploys/restarts. Requires a paid
+    # instance (not available on the free plan). Uncomment to enable.
+    # disk:
+    #   name: anato3d-data
+    #   mountPath: /data
+    #   sizeGB: 5
