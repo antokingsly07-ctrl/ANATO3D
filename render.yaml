@@ -10,7 +10,8 @@ services:
   - type: web
     name: anato3d-backend
     runtime: docker
-    plan: free
+    # A persistent disk requires a paid instance plan.
+    plan: 0.5c-512mb
     region: oregon
     # Monorepo layout: build only the backend image.
     dockerfilePath: ./backend/Dockerfile
@@ -23,16 +24,15 @@ services:
     envVars:
       - key: ANATO3D_DEBUG
         value: "false"
-      # All uploads and derived artefacts (ephemeral unless a disk is attached).
+      # All uploads and derived artefacts, persisted on the attached disk.
       - key: ANATO3D_DATA_DIR
         value: /data
       # Browser origins allowed to call the API. Set this in the Render Dashboard
-      # to your frontend URL, e.g. '["https://your-app.vercel.app"]'.
+      # to your frontend URL, e.g. ["https://your-app.vercel.app"].
       - key: ANATO3D_CORS_ORIGINS
         sync: false
-    # Persistent disk keeps uploads across deploys/restarts. Requires a paid
-    # instance (not available on the free plan). Uncomment to enable.
-    # disk:
-    #   name: anato3d-data
-    #   mountPath: /data
-    #   sizeGB: 5
+    # Persistent disk keeps uploads across deploys/restarts.
+    disk:
+      name: anato3d-data
+      mountPath: /data
+      sizeGB: 5
