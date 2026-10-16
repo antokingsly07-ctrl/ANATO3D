@@ -1,27 +1,27 @@
-import { Activity, AlertTriangle, Cpu, RefreshCw } from "lucide-react";
+import { Activity, AlertTriangle, Cpu, PanelRightOpen, RefreshCw } from "lucide-react";
 
 import { useWorkflow } from "../state/WorkflowProvider";
 import { Badge, Button, Spinner } from "./ui";
 
-export function TopStatusBar() {
+export function TopStatusBar({ onTogglePanels }: { onTogglePanels?: () => void }) {
   const { state, findings, refreshHealth } = useWorkflow();
   const health = state.health;
 
   return (
-    <header className="flex items-center justify-between gap-4 border-b border-ink-700/70 bg-ink-900/90 px-4 py-2.5">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <span className="grid h-7 w-7 place-items-center rounded-md border border-accent/40 bg-accent/10 text-accent">
+    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-ink-700/70 bg-ink-900/90 px-4 py-2.5">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-accent/40 bg-accent/10 text-accent">
             <Activity size={15} />
           </span>
-          <div className="leading-tight">
+          <div className="min-w-0 leading-tight">
             <div className="text-sm font-semibold tracking-wide text-slate-100">
               ANATO3D
-              <span className="ml-2 text-[10px] font-normal uppercase tracking-[0.2em] text-slate-500">
+              <span className="ml-2 hidden text-[10px] font-normal uppercase tracking-[0.2em] text-slate-500 sm:inline">
                 reconstruction workbench
               </span>
             </div>
-            <div className="text-[10px] text-slate-500">
+            <div className="hidden truncate text-[10px] text-slate-500 sm:block">
               Patient-specific 3D anatomical reconstruction · research prototype
             </div>
           </div>
@@ -73,6 +73,12 @@ export function TopStatusBar() {
         <Button onClick={() => void refreshHealth()} title="Re-check backend health">
           <RefreshCw size={12} />
         </Button>
+
+        {onTogglePanels ? (
+          <Button onClick={onTogglePanels} title="Show panels">
+            <PanelRightOpen size={13} /> Panels
+          </Button>
+        ) : null}
       </div>
     </header>
   );
