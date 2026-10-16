@@ -36,7 +36,7 @@ export function DatasetPanel() {
             disabled={state.running}
             onClick={() => fileInput.current?.click()}
           >
-            <Upload size={13} /> Upload DICOM
+            <Upload size={13} /> Upload DICOM / NIfTI
           </Button>
           <Button
             className="flex-1"
@@ -155,8 +155,8 @@ export function DatasetPanel() {
           </div>
         ) : (
           <p className="text-[11px] text-slate-500">
-            Upload a DICOM series or generate a synthetic phantom to begin. Nothing leaves this
-            machine.
+            Upload a DICOM series or a NIfTI volume (.nii/.nii.gz, converted to DICOM), or generate a
+            synthetic phantom to begin. Nothing leaves this machine.
           </p>
         )}
       </div>

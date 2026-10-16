@@ -32,6 +32,7 @@ from ...schemas.dicom import (
     SyntheticRequest,
     SyntheticResponse,
 )
+from ...services.dicom import nifti as nifti_module
 from ...services.dicom import reader
 from ...services.dicom import series as series_service
 from ...services.dicom.series_ordering import describe_frame, order_series
@@ -53,15 +54,24 @@ _MAX_PREVIEW_SLICES = 500
 # Upload
 # ---------------------------------------------------------------------------
 
-@router.post("/upload", response_model=DatasetSummary, summary="Upload a DICOM dataset")
+@router.post("/upload", response_model=DatasetSummary, summary="Upload a DICOM dataset or NIfTI volume")
 async def upload(
-    files: list[UploadFile] = File(..., description="DICOM files (a .zip archive is also accepted)."),
+    files: list[UploadFile] = File(
+        ...,
+        description=(
+            "DICOM files (a .zip archive is also accepted), or a NIfTI volume "
+            "(.nii / .nii.gz) which is converted to DICOM automatically."
+        ),
+    ),
 ) -> DatasetSummary:
     """Store the uploaded files and scan them for DICOM series.
 
     The upload is size- and count-limited before anything is written.  A ``.zip``
     archive is extracted safely (member names are sanitised and blocked
     extensions are rejected); the archive itself is then removed.
+
+    NIfTI volumes (``.nii`` / ``.nii.gz``) are converted into an equivalent DICOM
+    CT series so the remainder of the pipeline is unchanged.
     """
     if not files:
         raise ValidationError("No files were included in the upload.")
@@ -93,6 +103,12 @@ async def upload(
         written += extracted
         archive.unlink(missing_ok=True)
 
+    # If the user uploaded NIfTI volumes instead of a DICOM series, convert them
+    # to DICOM in place so the rest of the pipeline is unchanged.
+    converted_notes = _convert_nifti_volumes(uploads)
+    for note in converted_notes:
+        logger.info("Import: %s", note)
+
     dataset = reader.scan_dataset(uploads)
     dataset.dataset_id = workspace.dataset_id
 
@@ -101,8 +117,9 @@ async def upload(
         raise NoValidDicomSeriesError(
             "None of the uploaded files could be parsed as DICOM.",
             detail=(
-                f"Scanned {dataset.file_count} file(s). Check that you selected the original "
-                "DICOM slices (not a screenshot or an exported PNG)."
+                f"Scanned {dataset.file_count} file(s). Accepted inputs are a DICOM series "
+                "(slices or a .zip), or a NIfTI volume (.nii / .nii.gz) which is converted "
+                "to DICOM automatically. Screenshots and PNGs are not supported."
             ),
         )
 
@@ -115,6 +132,30 @@ async def upload(
     deps.register_dataset(record)
     logger.info("Stored dataset %s (%d file(s), %d DICOM)", record.dataset_id, written, len(dataset.dicom_files))
     return presenters.dataset_summary(record)
+
+
+def _convert_nifti_volumes(uploads: Path) -> list[str]:
+    """Convert any NIfTI volumes under ``uploads`` into DICOM series, in place.
+
+    Returns human-readable notes describing what happened (used for logging).
+    Conversion failures never abort the upload; the normal DICOM scan still runs.
+    """
+    sources = sorted(p for p in uploads.rglob("*") if p.is_file() and nifti_module.is_nifti(p))
+    if not sources:
+        return []
+
+    notes: list[str] = []
+    for source in sources:
+        name = source.name.lower()
+        base = source.name[: -len(".nii.gz")] if name.endswith(".nii.gz") else source.stem
+        try:
+            written = nifti_module.convert_nifti_series(source, source.parent / f"{base}_dicom")
+        except Exception as exc:  # noqa: BLE001 - never let an import abort the upload
+            notes.append(f"Could not convert {source.name}: {exc}")
+            continue
+        source.unlink(missing_ok=True)
+        notes.append(f"Converted {source.name} into {len(written)} DICOM slice(s).")
+    return notes
 
 
 async def _store_stream(

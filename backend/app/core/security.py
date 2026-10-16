@@ -58,7 +58,7 @@ def validate_upload_name(name: str) -> str:
     if suffix in BLOCKED_EXTENSIONS:
         raise UnsupportedFileError(
             f"File type '{suffix}' is not allowed.",
-            detail="Only DICOM files, NIfTI masks and archives may be uploaded.",
+            detail="Only DICOM series, NIfTI volumes (.nii/.nii.gz) and archives may be uploaded.",
         )
     return safe
 
