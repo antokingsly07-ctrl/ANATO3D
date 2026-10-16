@@ -8,7 +8,7 @@ fastapi>=0.110
 uvicorn[standard]>=0.27
 python-multipart>=0.0.9
 pydantic>=2.5
-pydantic-settings>=2.1
+pydantic-settings>=2.3
 
 # Scientific core
 numpy>=1.26

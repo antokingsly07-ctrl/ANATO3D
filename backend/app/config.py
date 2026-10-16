@@ -7,10 +7,13 @@ paths -- everything is derived from ``ANATO3D_DATA_DIR``.
 
 from __future__ import annotations
 
+import json
 from functools import lru_cache
 from pathlib import Path
+from typing import Annotated, Any
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -55,12 +58,36 @@ class Settings(BaseSettings):
     max_slices: int = 0
 
     # -- CORS --------------------------------------------------------------
-    cors_origins: list[str] = [
+    # Accepted formats for ANATO3D_CORS_ORIGINS:
+    #   - JSON array:        ["https://app.vercel.app","https://x.example"]
+    #   - comma-separated:   https://app.vercel.app,https://x.example
+    #   - a single origin:   https://app.vercel.app
+    cors_origins: Annotated[list[str], NoDecode] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:4173",
         "http://127.0.0.1:4173",
     ]
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _parse_cors_origins(cls, value: Any) -> Any:
+        if not isinstance(value, str):
+            return value
+        raw = value.strip()
+        # Tolerate a value pasted with surrounding quotes (e.g. from a shell example).
+        if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in {"'", '"'}:
+            raw = raw[1:-1].strip()
+        if not raw:
+            return []
+        if raw.startswith("["):
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, list):
+                    return [str(item).strip() for item in parsed if str(item).strip()]
+            except json.JSONDecodeError:
+                pass
+        return [item.strip() for item in raw.split(",") if item.strip()]
 
     @property
     def work_root(self) -> Path:
